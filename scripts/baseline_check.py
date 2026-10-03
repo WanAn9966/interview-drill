@@ -53,6 +53,8 @@ def smoke(base):
         page.raise_for_status()
         if 'text/html' not in page.headers.get('content-type', ''):
             raise RuntimeError('Home page did not return HTML')
+        if 'InterviewDrill' not in page.text:
+            raise RuntimeError('Home page still shows the old project name')
         resume = client.post('/api/resume', json={'text':
             '项目经历\n练习项目：负责需求整理与接口测试。\n实习经历\n参与团队协作与问题跟进。'})
         resume.raise_for_status()

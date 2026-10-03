@@ -42,7 +42,7 @@ def connection():
 with connection() as c:
     c.execute('CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, version INTEGER, body TEXT)')
 
-app = FastAPI(title='深问 · 本地面试工作台')
+app = FastAPI(title='InterviewDrill · 本地面试工作台')
 
 
 @app.middleware('http')
