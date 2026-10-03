@@ -132,6 +132,6 @@ def main():
     print(json.dumps({'credential_free_clean_checkout': 'ok',
                       'git_excludes_runtime_data': 'ok', **result}, ensure_ascii=False))
 
-###1
+#1
 if __name__ == '__main__':
     main()
