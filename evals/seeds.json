@@ -1,0 +1,123 @@
+[
+  {
+    "schema_version": 1,
+    "case_id": "seed-agent-01",
+    "group_id": "synthetic-agent-01",
+    "split": "dev",
+    "role_family": "AI 与软件工程",
+    "role": "Agent 开发工程师",
+    "jd": "设计工具调用流程，处理失败恢复，并建立可重复的效果评估。",
+    "resume_cards": [
+      {"id": "p1", "kind": "项目", "text": "搭建客服 Agent 原型，负责工具调用和任务状态管理。"},
+      {"id": "s1", "kind": "工作技能", "text": "熟悉 Python 和接口调试。"}
+    ],
+    "question": {"text": "你在客服 Agent 中负责工具调用。调用失败后如何恢复状态，评估集又如何验证恢复有效？", "jd_quote": "处理失败恢复", "resume_card_id": "p1", "resume_quote": "负责工具调用和任务状态管理"},
+    "answer": "我加了重试，但没有记录幂等键，也没有针对失败恢复建立评估集。",
+    "feedback_target": {"answer_quote": "没有记录幂等键", "gap": "缺少重复执行与恢复正确性的证据。", "action": "补充故障场景、幂等设计和可复现的评估结果。"},
+    "source": {"type": "synthetic", "authorization_ref": "self-authored", "deidentified": true},
+    "review": {"status": "pending", "reviewer_id": null, "reviewed_on": null, "labels": null}
+  },
+  {
+    "schema_version": 1,
+    "case_id": "seed-aiapp-01",
+    "group_id": "synthetic-aiapp-01",
+    "split": "dev",
+    "role_family": "AI 与软件工程",
+    "role": "AI 应用开发工程师",
+    "jd": "建设知识库问答应用，解释检索质量指标，并控制线上回答延迟。",
+    "resume_cards": [
+      {"id": "p1", "kind": "项目", "text": "实现文档检索问答，参与分块策略和重排实验。"}
+    ],
+    "question": {"text": "你参与的重排实验怎样衡量检索质量？请说明基线、样本来源和线上延迟变化。", "jd_quote": "解释检索质量指标", "resume_card_id": "p1", "resume_quote": "参与分块策略和重排实验"},
+    "answer": "我们觉得效果更好，但当时没保存实验前后的统一测试集，延迟也没有测量。",
+    "feedback_target": {"answer_quote": "没保存实验前后的统一测试集", "gap": "无法证明检索效果提升或延迟代价。", "action": "用固定问题集记录基线、指标口径和延迟分位数。"},
+    "source": {"type": "synthetic", "authorization_ref": "self-authored", "deidentified": true},
+    "review": {"status": "pending", "reviewer_id": null, "reviewed_on": null, "labels": null}
+  },
+  {
+    "schema_version": 1,
+    "case_id": "seed-fullstack-01",
+    "group_id": "synthetic-fullstack-01",
+    "split": "dev",
+    "role_family": "AI 与软件工程",
+    "role": "全栈开发工程师",
+    "jd": "负责前后端功能交付，保证订单接口在重复提交时的数据一致性。",
+    "resume_cards": [
+      {"id": "i1", "kind": "实习经历", "text": "实习中开发订单页面和提交接口，负责前端表单与后端校验。"}
+    ],
+    "question": {"text": "你负责的订单提交接口遇到用户连点两次时，怎样防止重复订单？前端和后端各承担什么责任？", "jd_quote": "重复提交时的数据一致性", "resume_card_id": "i1", "resume_quote": "负责前端表单与后端校验"},
+    "answer": "前端禁用了提交按钮；后端没有幂等约束，所以网络重试仍可能生成两笔订单。",
+    "feedback_target": {"answer_quote": "后端没有幂等约束", "gap": "仅靠前端按钮无法覆盖重试和并发请求。", "action": "说明幂等键、数据库唯一约束及重复请求的返回语义。"},
+    "source": {"type": "synthetic", "authorization_ref": "self-authored", "deidentified": true},
+    "review": {"status": "pending", "reviewer_id": null, "reviewed_on": null, "labels": null}
+  },
+  {
+    "schema_version": 1,
+    "case_id": "seed-product-01",
+    "group_id": "synthetic-product-01",
+    "split": "dev",
+    "role_family": "产品管理",
+    "role": "产品经理",
+    "jd": "通过用户研究识别需求，设计实验并解释功能上线后的效果。",
+    "resume_cards": [
+      {"id": "p1", "kind": "项目", "text": "在校园活动报名项目中整理反馈，提出提醒功能。"},
+      {"id": "e1", "kind": "学历", "text": "完成用户研究课程和访谈练习。"}
+    ],
+    "question": {"text": "你如何确认报名提醒是主要需求？上线后用什么对照方式判断它是否提高到场率？", "jd_quote": "设计实验并解释功能上线后的效果", "resume_card_id": "p1", "resume_quote": "提出提醒功能"},
+    "answer": "我们收到了几条忘记活动时间的反馈，于是加了提醒；没有设置对照组。",
+    "feedback_target": {"answer_quote": "没有设置对照组", "gap": "无法把到场率变化归因于提醒功能。", "action": "补充访谈样本、优先级依据和可实施的对照或分阶段发布方案。"},
+    "source": {"type": "synthetic", "authorization_ref": "self-authored", "deidentified": true},
+    "review": {"status": "pending", "reviewer_id": null, "reviewed_on": null, "labels": null}
+  },
+  {
+    "schema_version": 1,
+    "case_id": "seed-analytics-01",
+    "group_id": "synthetic-analytics-01",
+    "split": "dev",
+    "role_family": "数据分析",
+    "role": "数据分析师",
+    "jd": "建立业务指标口径，定位转化率波动并给出可验证的建议。",
+    "resume_cards": [
+      {"id": "w1", "kind": "工作经历", "text": "负责渠道周报，汇总访问量、注册量和转化率。"}
+    ],
+    "question": {"text": "渠道转化率下降时，你如何检查分母、去重规则和渠道结构变化？请结合你做的周报说明。", "jd_quote": "定位转化率波动", "resume_card_id": "w1", "resume_quote": "汇总访问量、注册量和转化率"},
+    "answer": "我只对比了总转化率，后来发现新增渠道改变了流量结构，最初的结论并不可靠。",
+    "feedback_target": {"answer_quote": "只对比了总转化率", "gap": "缺少分渠道分层与指标口径核对。", "action": "按渠道拆分并核对分子、分母、去重周期，再陈述因果边界。"},
+    "source": {"type": "synthetic", "authorization_ref": "self-authored", "deidentified": true},
+    "review": {"status": "pending", "reviewer_id": null, "reviewed_on": null, "labels": null}
+  },
+  {
+    "schema_version": 1,
+    "case_id": "seed-customer-01",
+    "group_id": "synthetic-customer-01",
+    "split": "dev",
+    "role_family": "客户服务",
+    "role": "客户成功经理",
+    "jd": "负责客户上线和续约风险识别，协调支持团队解决高优先级问题。",
+    "resume_cards": [
+      {"id": "i1", "kind": "实习", "text": "协助处理客户上线问题，跟踪工单和交付进度。"}
+    ],
+    "question": {"text": "请讲一次你跟踪的高优先级上线问题：如何判断影响范围、协调支持团队并确认客户恢复使用？", "jd_quote": "协调支持团队解决高优先级问题", "resume_card_id": "i1", "resume_quote": "跟踪工单和交付进度"},
+    "answer": "我负责催进度，但没有直接联系客户确认恢复情况。",
+    "feedback_target": {"answer_quote": "没有直接联系客户确认恢复情况", "gap": "交付完成与客户恢复使用之间缺少验证。", "action": "说明影响分级、协同记录和客户侧确认步骤，并明确本人职责边界。"},
+    "source": {"type": "synthetic", "authorization_ref": "self-authored", "deidentified": true},
+    "review": {"status": "pending", "reviewer_id": null, "reviewed_on": null, "labels": null}
+  },
+  {
+    "schema_version": 1,
+    "case_id": "seed-design-01",
+    "group_id": "synthetic-design-01",
+    "split": "dev",
+    "role_family": "设计",
+    "role": "用户体验设计师",
+    "jd": "针对复杂表单开展可用性测试，提出设计改进并验证任务完成率。",
+    "resume_cards": [
+      {"id": "p1", "kind": "项目", "text": "改版预约表单，负责原型设计与小规模用户测试。"}
+    ],
+    "question": {"text": "你的小规模测试如何发现表单的关键障碍？改版后怎样验证任务完成率的变化？", "jd_quote": "验证任务完成率", "resume_card_id": "p1", "resume_quote": "负责原型设计与小规模用户测试"},
+    "answer": "测试时三名参与者都停在日期选择步骤，但改版后没有再做相同任务的测试。",
+    "feedback_target": {"answer_quote": "改版后没有再做相同任务的测试", "gap": "没有改版前后的可比结果。", "action": "使用相同任务与成功定义复测，并说明样本量限制。"},
+    "source": {"type": "synthetic", "authorization_ref": "self-authored", "deidentified": true},
+    "review": {"status": "pending", "reviewer_id": null, "reviewed_on": null, "labels": null}
+  }
+]
