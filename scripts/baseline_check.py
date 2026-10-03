@@ -32,14 +32,14 @@ def ignored(path):
 
 def check_repository_boundaries():
     for path in ('.env', 'data/interviews.sqlite3', 'output/baseline.json',
-                 '.playwright-cli/browser.yml'):
+                 '.playwright-cli/browser.yml', '.idea/workspace.xml'):
         if not ignored(path):
             raise RuntimeError(f'{path} is not excluded by .gitignore')
     tracked = subprocess.run(['git', 'ls-files', '-z'], cwd=ROOT,
                              capture_output=True, check=True).stdout.decode('utf-8').split('\0')
     for path in tracked:
         normalized = path.replace('\\', '/')
-        if normalized in ('.env',) or normalized.startswith(('data/', 'output/', '.playwright-cli/')):
+        if normalized in ('.env',) or normalized.startswith(('data/', 'output/', '.playwright-cli/', '.idea/')):
             raise RuntimeError('Private runtime data is tracked by Git')
 
 
