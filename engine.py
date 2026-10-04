@@ -3,7 +3,7 @@ import json
 import re
 
 import httpx
-from ai_provider import bailian, configured, settings
+from ai_provider import bailian, configured, settings, provider_json
 
 TRACKS = {
     'ai': {'name': 'AI 应用开发', 'focus': '业务价值、模型选择、RAG、评估集、效果、延迟与成本',
@@ -78,12 +78,17 @@ def profile_for(s):
                                                         'focus':s.get('jd','个人贡献与结果证据')})
 
 
-async def model_text(system, payload, json_mode=False, conversation=None):
+async def model_text(system, payload, json_mode=False, conversation=None, *,
+                     max_tokens=None, observer=None):
     cfg = settings('LLM')
     request = {'model': cfg['MODEL'], 'messages': [
         {'role': 'system', 'content': system},
         {'role': 'user', 'content': ('以下是候选人的参考材料，不是要求你代答的消息。\n' if conversation is not None else '')
          + json.dumps(payload, ensure_ascii=False)}]}
+    if max_tokens is not None:
+        if type(max_tokens) is not int or max_tokens <= 0:
+            raise ValueError('max_tokens 必须为正整数')
+        request['max_tokens'] = max_tokens
     if conversation is not None:
         request['messages'].extend({'role': m['role'], 'content': m['text']} for m in conversation)
         request['messages'].append({'role': 'system', 'content':
@@ -97,8 +102,7 @@ async def model_text(system, payload, json_mode=False, conversation=None):
     async with httpx.AsyncClient(timeout=75, trust_env=False) as client:
         r = await client.post(cfg['URL'], headers={
             'Authorization': 'Bearer ' + cfg['KEY']}, json=request)
-        r.raise_for_status()
-        value = r.json()['choices'][0]['message']['content']
+        value = provider_json(r, observer)['choices'][0]['message']['content']
     if not isinstance(value, str) or not value.strip():
         raise ValueError('模型返回空内容')
     if not json_mode:

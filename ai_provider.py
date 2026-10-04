@@ -1,12 +1,44 @@
 """Provider configuration and speech transports. Credentials stay on the server."""
 import base64
 import io
+import math
 import os
 import re
 import wave
 from urllib.parse import urlsplit, urlunsplit
 
 import httpx
+
+
+def load_env_file(path):
+    """Read the local configuration without importing the database or web app."""
+    if path.exists():
+        for line in path.read_text(encoding='utf-8-sig').splitlines():
+            if '=' in line and not line.lstrip().startswith('#'):
+                key, value = line.split('=', 1)
+                os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
+def provider_json(response, observer=None):
+    """Expose only allowlisted numeric usage, never response text or signed URLs."""
+    try:
+        data = response.json()
+    except ValueError:
+        data = None
+    if observer is not None:
+        raw = data.get('usage') if isinstance(data, dict) else None
+        usage = {}
+        if isinstance(raw, dict):
+            for key in ('prompt_tokens', 'completion_tokens', 'total_tokens',
+                        'input_tokens', 'output_tokens', 'characters', 'seconds'):
+                value = raw.get(key)
+                if type(value) in (int, float) and math.isfinite(value) and value >= 0:
+                    usage[key] = value
+        observer({'http_status': response.status_code, 'usage': usage or None})
+    response.raise_for_status()
+    if not isinstance(data, dict):
+        raise ValueError('服务返回的 JSON 结构无效')
+    return data
 
 
 def bailian():
@@ -48,7 +80,7 @@ def headers(cfg):
     return {'Authorization': 'Bearer ' + cfg['KEY']}
 
 
-async def transcribe_audio(content, mime, extension):
+async def transcribe_audio(content, mime, extension, *, observer=None):
     cfg = settings('STT')
     async with httpx.AsyncClient(timeout=90, trust_env=False) as client:
         if bailian():
@@ -64,8 +96,7 @@ async def transcribe_audio(content, mime, extension):
             response = await client.post(cfg['URL'], headers=headers(cfg),
                 data={'model': cfg['MODEL'], 'language': 'zh'},
                 files={'file': (f'answer.{extension}', content, mime)})
-        response.raise_for_status()
-        data = response.json()
+        data = provider_json(response, observer)
         text = data['choices'][0]['message']['content'] if bailian() else data['text']
         if not isinstance(text, str) or not text.strip():
             raise ValueError('没有识别到有效语音')
@@ -116,7 +147,7 @@ def join_wav(parts):
     return output.getvalue()
 
 
-async def synthesize(text):
+async def synthesize(text, *, observer=None):
     cfg = settings('TTS')
     async with httpx.AsyncClient(timeout=90, trust_env=False) as client:
         if not bailian():
@@ -130,8 +161,8 @@ async def synthesize(text):
             response = await client.post(cfg['URL'], headers=headers(cfg), json={
                 'model': cfg['MODEL'], 'input': {'text': chunk,
                 'voice': os.getenv('TTS_VOICE', '').strip() or 'Cherry', 'language_type': 'Chinese'}})
-            response.raise_for_status()
-            url = audio_url(response.json()['output']['audio']['url'])
+            data = provider_json(response, observer)
+            url = audio_url(data['output']['audio']['url'])
             content = bytearray()
             async with client.stream('GET', url) as audio:
                 audio.raise_for_status()

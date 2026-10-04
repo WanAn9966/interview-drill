@@ -36,7 +36,7 @@ DASHSCOPE_API_KEY=在本机填写你的新密钥
 - 联网模式会发送确认后的经历、JD、必要对话给所配置的模型。云端数据留存受供应商政策约束。
 - 语音识别可设置 `STT_URL/STT_KEY/STT_MODEL`，要求接口支持 multipart 的 file/model/language 参数和 JSON text 返回值。
 - 语音合成可设置 `TTS_URL/TTS_KEY/TTS_MODEL/TTS_VOICE`，要求接口支持 model/input/voice/response_format 参数及 MP3 音频返回值。
-- 上述 multipart/MP3 格式用于 generic 模式；百炼模式使用独立适配。其他供应商协议需单独核对。当前仍需用有效账户做真实 API 联调。
+- 上述 multipart/MP3 格式用于 generic 模式；百炼模式使用独立适配。其他供应商协议需单独核对。2026-10-04 已完成一次北京地域文本与短句语音往返实测，详见[开发日志](docs/开发日志.md#d04)；这不代表其他账户或真人录音已通过验收。
 - 没有 STT 配置时尝试浏览器语音识别，可能依赖浏览器云服务，兼容性与网络可用性有限。
 - 没有 TTS 配置时使用系统中文音色。没有中文音色则提示安装系统中文语音包或配置 TTS。
 
@@ -68,6 +68,22 @@ SQLite 数据在 `data/interviews.sqlite3`。界面提供按会话删除；本�
 python -m pip install -r requirements-dev.txt
 python -m unittest discover -s tests -v
 ```
+
+### 服务连接诊断
+
+在项目根目录运行，默认只读配置，不发送请求：
+
+```powershell
+python scripts/provider_check.py
+# 使用本机 .env：最多三个模型请求，每项一次，不自动重试。
+python scripts/provider_check.py --live --budget-cny 0.05
+```
+
+此命令复用应用的模型和语音调用代码，仅接纳北京官方地址及上述三个默认模型。固定虚构材料、LLM 输出上限 128 tokens、短句合成和最长 30 秒识别控制本次用量；`--budget-cny` 是按核对日公开单价做的预估门禁，不是云账户硬扣费上限。更换模型或价格后须重新核对估算。
+
+结果保存到被 Git 忽略的 `output/provider-check.json`，只包含配置检查结果、状态、耗时、数值用量及估算，不含密钥、音频下载签名、简历或问答正文。没有用量时记为未知；实际费用需看供应商账单。再次运行会覆盖该文件，可用 `--output` 指定另一个本地结果路径。单元测试使用替身服务，不会自动调用真实 API。
+
+开发进度、遇到的问题、解决过程、业务核对与验收结果统一维护在[开发日志](docs/开发日志.md)，以后不再每天新建记录文件。
 
 规划与参考见 [开发计划](开发计划.md) 和 [架构设计](架构设计.md)。本实现采用三段式面试、确定性状态机和可替换语音/模型接口，未复制参考项目代码。
 

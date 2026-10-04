@@ -16,14 +16,10 @@ from pydantic import BaseModel, Field
 from engine import TRACKS, build_profile, build_report, configured, make_plan, next_question
 
 from resume_parser import KINDS, ResumeError, extract_document, parse_sections
-from ai_provider import bailian, missing, transcribe_audio, synthesize
+from ai_provider import bailian, missing, transcribe_audio, synthesize, load_env_file
 
 ROOT = Path(__file__).resolve().parent
-if (ROOT / '.env').exists():
-    for line in (ROOT / '.env').read_text(encoding='utf-8-sig').splitlines():
-        if '=' in line and not line.lstrip().startswith('#'):
-            key, value = line.split('=', 1)
-            os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+load_env_file(ROOT / '.env')
 DATA = Path(os.getenv('INTERVIEW_DATA_DIR', str(ROOT / 'data')))
 DATA.mkdir(parents=True, exist_ok=True)
 DB = DATA / 'interviews.sqlite3'
