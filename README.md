@@ -85,6 +85,16 @@ python scripts/provider_check.py --live --budget-cny 0.05
 
 开发进度、遇到的问题、解决过程、业务核对与验收结果统一维护在[开发日志](docs/开发日志.md)，以后不再每天新建记录文件。
 
+### 五日集中验收
+
+```powershell
+python scripts/m0_acceptance.py
+# 如需在隔离页面手动验收，使用输出的临时 URL，完成后按 Enter 关闭：
+python scripts/m0_acceptance.py --serve
+```
+
+集中验收在临时数据库和清空供应商配置的环境运行测试、完整规则流程及已保存会话的重启恢复。结果与测试明细在 `output/m0-acceptance/`，包含源码摘要。它不自动请求真实服务；D04 历史联网证据默认读取 `output/provider-check.json`，缺失时明确失败，可用 `--provider-evidence` 指向已有记录。真实服务的新测试需单独运行上面的受控联调命令。浏览器、真人语音、账号隔离和模型质量的验证范围见[集中验收记录](docs/开发日志.md#d05)。
+
 规划与参考见 [开发计划](开发计划.md) 和 [架构设计](架构设计.md)。本实现采用三段式面试、确定性状态机和可替换语音/模型接口，未复制参考项目代码。
 
 ## 简历解析 v2

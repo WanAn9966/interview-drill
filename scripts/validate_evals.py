@@ -28,21 +28,26 @@ def nonempty(value):
 def validate_case(case):
     require(isinstance(case, dict), 'case', 'must be an object')
     case_id = case.get('case_id', '<missing case_id>')
-    require(nonempty(case_id), case_id, 'case_id is required')
-    require(case.get('schema_version') == 1, case_id, 'unsupported schema_version')
+    require(nonempty(case.get('case_id')), case_id, 'case_id is required')
+    require(type(case.get('schema_version')) is int and case['schema_version'] == 1,
+            case_id, 'unsupported schema_version')
     for field in ('group_id', 'role_family', 'role', 'jd', 'answer'):
         require(nonempty(case.get(field)), case_id, f'{field} is required')
-    require(case.get('split') in {'dev', 'holdout'}, case_id, 'invalid split')
+    require(nonempty(case.get('split')) and case['split'] in {'dev', 'holdout'},
+            case_id, 'invalid split')
 
     source = case.get('source')
     require(isinstance(source, dict), case_id, 'source is required')
-    require(source.get('type') in {'synthetic', 'authorized_deidentified'},
+    require(nonempty(source.get('type')) and source['type'] in {'synthetic', 'authorized_deidentified'},
             case_id, 'invalid source type')
     require(nonempty(source.get('authorization_ref')), case_id, 'authorization_ref is required')
     require(source.get('deidentified') is True, case_id, 'source must be deidentified')
     if source['type'] == 'synthetic':
         require(source['authorization_ref'] == 'self-authored', case_id,
                 'synthetic source must be self-authored')
+    else:
+        require(source['authorization_ref'].strip().lower() != 'self-authored', case_id,
+                'real source needs a separate authorization record')
 
     cards = case.get('resume_cards')
     require(isinstance(cards, list) and bool(cards), case_id, 'resume_cards are required')
@@ -52,7 +57,7 @@ def validate_case(case):
         card_id = card.get('id')
         require(nonempty(card_id) and card_id not in card_by_id, case_id,
                 'resume card ids must be unique and nonempty')
-        require(card.get('kind') in CARD_KINDS and nonempty(card.get('text')),
+        require(nonempty(card.get('kind')) and card['kind'] in CARD_KINDS and nonempty(card.get('text')),
                 case_id, 'resume card kind/text invalid')
         card_by_id[card_id] = card
 
@@ -61,7 +66,8 @@ def validate_case(case):
     require(nonempty(question.get('text')), case_id, 'question text is required')
     require(nonempty(question.get('jd_quote')) and question['jd_quote'] in case['jd'],
             case_id, 'jd_quote is not in JD')
-    card = card_by_id.get(question.get('resume_card_id'))
+    require(nonempty(question.get('resume_card_id')), case_id, 'invalid resume_card_id')
+    card = card_by_id.get(question['resume_card_id'])
     require(card is not None, case_id, 'question references an unknown resume card')
     require(nonempty(question.get('resume_quote')) and
             question['resume_quote'] in card['text'], case_id,
@@ -77,7 +83,8 @@ def validate_case(case):
 
     review = case.get('review')
     require(isinstance(review, dict), case_id, 'review is required')
-    require(review.get('status') in {'pending', 'reviewed'}, case_id, 'invalid review status')
+    require(nonempty(review.get('status')) and review['status'] in {'pending', 'reviewed'},
+            case_id, 'invalid review status')
     if review['status'] == 'pending':
         require(review.get('reviewer_id') is None and review.get('labels') is None and
                 review.get('reviewed_on') is None, case_id,
@@ -90,7 +97,7 @@ def validate_case(case):
                     for value in review['labels'].values()), case_id,
                 'reviewed case needs five 0-2 labels')
         try:
-            date.fromisoformat(review['reviewed_on'])
+            date.fromisoformat(review.get('reviewed_on'))
         except (TypeError, ValueError):
             raise ValueError(f'{case_id}: reviewed_on must be an ISO date') from None
 

@@ -123,6 +123,26 @@ class BailianTransport(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(ValueError):
             provider.join_wav([b'not audio'])
 
+    async def test_empty_choices_returns_recoverable_api_error(self):
+        def handler(req):
+            return httpx.Response(200, json={'choices': []})
+        with self.transport(handler):
+            client = TestClient(server.app, raise_server_exceptions=False)
+            response = client.post('/api/sessions', json={
+                'mode': 'live', 'role': '产品经理', 'jd': '需求分析',
+                'cards': [{'id': 'synthetic', 'kind': '项目', 'confirmed': True,
+                           'text': '虚构案例：整理课程项目的用户反馈。'}]})
+        self.assertEqual(response.status_code, 502)
+        self.assertIn('岗位分析失败', response.json()['detail'])
+
+    async def test_malformed_chat_envelope_is_a_validation_error(self):
+        for data in ({'choices': []}, {'choices': [None]}, {'choices': [{'message': []}]},
+                     {'choices': [{'message': {'content': None}}]}):
+            with self.subTest(data=data):
+                with self.transport(lambda req: httpx.Response(200, json=data)):
+                    with self.assertRaises(ValueError):
+                        await engine.model_text('测试', {})
+
 
 if __name__ == '__main__':
     unittest.main()

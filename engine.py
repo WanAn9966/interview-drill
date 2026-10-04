@@ -102,7 +102,12 @@ async def model_text(system, payload, json_mode=False, conversation=None, *,
     async with httpx.AsyncClient(timeout=75, trust_env=False) as client:
         r = await client.post(cfg['URL'], headers={
             'Authorization': 'Bearer ' + cfg['KEY']}, json=request)
-        value = provider_json(r, observer)['choices'][0]['message']['content']
+        data = provider_json(r, observer)
+        choices = data.get('choices')
+        if (not isinstance(choices, list) or not choices or not isinstance(choices[0], dict)
+                or not isinstance(choices[0].get('message'), dict)):
+            raise ValueError('模型返回的消息结构无效')
+        value = choices[0]['message'].get('content')
     if not isinstance(value, str) or not value.strip():
         raise ValueError('模型返回空内容')
     if not json_mode:

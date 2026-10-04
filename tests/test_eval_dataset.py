@@ -64,6 +64,39 @@ class EvaluationDataset(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'duplicate JSON key'):
                 load_dataset(path)
 
+    def test_malformed_types_are_validation_errors(self):
+        mutations = [
+            lambda c: c.pop('case_id'),
+            lambda c: c.update(schema_version=True),
+            lambda c: c.update(split=[]),
+            lambda c: c['source'].update(type={}),
+            lambda c: c['resume_cards'][0].update(kind=[]),
+            lambda c: c['question'].update(resume_card_id=[]),
+            lambda c: c['review'].update(status=[]),
+        ]
+        for index, mutate in enumerate(mutations):
+            with self.subTest(index=index):
+                cases = copy.deepcopy(self.cases)
+                mutate(cases[0])
+                with self.assertRaises(ValueError):
+                    validate_cases(cases)
+
+    def test_real_source_cannot_reuse_synthetic_permission(self):
+        cases = copy.deepcopy(self.cases)
+        cases[0]['source']['type'] = 'authorized_deidentified'
+        with self.assertRaisesRegex(ValueError, 'authorization record'):
+            validate_cases(cases)
+
+    def test_review_requires_date_and_accepts_complete_labels(self):
+        cases = copy.deepcopy(self.cases)
+        cases[0]['review'] = {'status': 'reviewed', 'reviewer_id': 'test-reviewer',
+            'labels': {key: 1 for key in ('role_fit', 'question_grounding', 'answer_evidence',
+                                        'feedback_grounding', 'actionability')}}
+        with self.assertRaisesRegex(ValueError, 'ISO date'):
+            validate_cases(cases)
+        cases[0]['review']['reviewed_on'] = '2026-10-04'
+        self.assertEqual(validate_cases(cases)['review_status']['reviewed'], 1)
+
     def test_each_seed_runs_through_interview_and_review(self):
         with tempfile.TemporaryDirectory() as directory:
             previous_db = server.DB
